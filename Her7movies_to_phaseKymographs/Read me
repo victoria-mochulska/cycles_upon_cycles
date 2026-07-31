@@ -1,0 +1,39 @@
+This folder contains the code to go from 
+
+1)	From raw Her7 data to processed data 
+2)	From processed data to intensity kymographs using Anterior Registration – Matlab, FIJI. 
+3)	From intensity kymographs to phase kymographs using wavelet analyses: Wavelet Analyses – Python
+
+---------------------------------------------------------------------------------------------------------------------------------------------------
+1)	From raw Her7 data to processed Her7 movies.  
+
+The folder “processedMoviesFIJI” contains code to process the raw files obtained from the microscope in FIJI to obtain smooth max-z projected Her7 movies. 
+
+i) Use the concatenate file “00_Concatenate_Images_fromLSM_autofocus” to obtain the concatenated movies (containing information about channels, z slices and timepoints) for each position from the raw data saved by the Zeiss LSM 780 software. 
+ii) Use the “splitChannels.ijm” file to obtain individual movies for each channel
+iii) Use the “makeMaxblur_intensityImage.ijm” file to smooth the signal in the max z projected images of Her7 channel.
+
+2)	From processed Her7 movies to Her7 intensity kymographs
+
+The folder “anteriorRegistrationKymographGeneration” contains code to quantify intensity in the Her7 movies and represent it in the form of 2D intensity kymographs. 
+
+For this, Her7 movies are first used to create a segmented masks which then serves as a template to obtain the midline of the tail, over which the intensity is quantified. For each sample, then the quantified intensities for each timepoint are aligned at the anterior most position (cut site) and represented in the form of kymographs. In the kymograph, the x axis represents time, the y axis represents distance from the cut site (increasing downwards) and the data in between the axis corresponds to quantified intensity. 
+
+i) Make sure you have the processed Her7 movies (smooth maxZ projected) and segmented masks of the tail explants for each sample each timepoint saved as movies in separate folders (one movie per sample) (I used Ilastik but any segmentation software would work) before starting this part. 
+ii)  The first phase of the code to obtain the midline is run in Matlab. It is compatible with Matlab R2021a version. Make sure you have bio-formats library loaded before running the code. 
+iii) Open the file makeMidline_runfileOne. Specify the master folder and the information about processed Her7 movies and segmented masks. Currently the file takes one sample as an input in one go. This is because the midlines obtained as an output from this code are not perfect and need to be processed further to make them better (see below). And it is easier to do this processing per sample. 
+iv) The segmented masks are first smoothed, then the midline is computed for the smoothed masks by extending the skeleton of the smooth mask linearly in both directions. Since the linear extension depends on the ends on the ends of the skeleton, the skeleton can be trimmed from both ends to obtain a midline that is more reflective of the shape of the tail and more consistent across timepoints. At present, the quality of midline is determined visually by the user and the trimming parameters are adjusted accordingly. Finally, the segmented midlines saved as binary movies. 
+v) The next part of the code is run in FIJI. 
+vi) Open the file analyseTail_saveRoiInfo_bp.groovy. Specify the paths of the processed intensity file, midline mask and sample names. The roiScalingFactor is an important parameter. It defines the dilation of the midline that reflects the orthogonal region along each point of the midline where the intensity is averaged. The positions along the midline and the corresponding intensities are saved in a text file. 
+vii) The final part of the code is again run in Matlab.
+viiii) Open the file makeKymo. Specify the paths to the midline and the saved coordinates and intensities that are obtained in (vi). Specify whether you want the align the intensities at the posterior end of the tail (Works better if the anterior part of the tail is missing from some frames in the original images). The kymographs are saved as tiff and mat files in the specified path. Note: The distance coordinates in the kymograph are in the same units as those in the processed intensity file used in (vi). 
+
+
+3)	From Her7 intensity kymographs to phase kymographs using wavelet
+The folder “waveletPython” contains the code to obtain period and phase kymographs from Her7 intensity kymographs using wavelet analyses (refer).
+
+i)	Make sure all three files are in the same environment. 
+ii)	Open the file “ template_ana_Kymos_new.py”
+iii)	Describe the sampling interval, cut-off period, period bounds (refer Monke et al), the path to output and input (intensity kymographs) files and press run.  
+
+If all parameters were set correctly, this program should save period and phase kymographs, along with detrended, detrended blurred and wavelet power kymographs in the specified path. 
